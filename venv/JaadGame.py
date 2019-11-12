@@ -25,26 +25,46 @@ class Player:
         self.right = False
         self.left = False
         self.walkCount = 0
+        self.standing = True
 
     def draw(self, win):
         if self.walkCount + 1 >= 27:
             self.walkCount = 0
 
-        if self.left:
-            window.blit(walkLeft[self.walkCount // 3], (self.x, self.y))
-            self.walkCount += 1
-        elif self.right:
-            window.blit(walkRight[self.walkCount // 3], (self.x, self.y))
-            self.walkCount += 1
+        if not self.standing:
+            if self.left:
+                window .blit(walkLeft[self.walkCount // 3], (self.x, self.y))
+                self.walkCount += 1
+            elif self.right:
+                window.blit(walkRight[self.walkCount // 3], (self.x, self.y))
+                self.walkCount += 1
         else:
-            window.blit(char, (self.x, self.y))
+            if self.right:
+                win.blit(walkRight[0], (self.x, self.y))
+            else:
+                win.blit(walkLeft[0], (self.x, self.y))
+
+
+class Projectile:
+    def __init__(self, x, y, radius, color, facing):
+        self.x = x
+        self.y = y
+        self.radius = radius
+        self.color = color
+        self.facing = facing    # positive or negative to determine which side facing ex (-1 or 1)
+        self.vel = 8 * facing  # multiply by facing because we want the bullet to go either left or right
+
+    def draw(self):
+        pygame.draw.circle(win, self.color, (self.x, self.y), self.radius)  # put a final comment of (..., 1)
+                                                                            # to make it not filled in
 
 
 clock = pygame.time.Clock()
 
+
 def redrawGameWindow():
 
-    window.blit(bg, (0,0))  # putting in the background
+    window.blit(bg, (0, 0))  # putting in the background
     jaad.draw(window)
     pygame.display.update()
 
@@ -66,13 +86,14 @@ while run:
         jaad.x -= jaad.vel
         jaad.left = True
         jaad.right = False
+        jaad.standing = False
     elif keys[pygame.K_RIGHT] and jaad.x < 500 + jaad.width + (4 * jaad.vel):
         jaad.x += jaad.vel
         jaad.right = True
         jaad.left = False
+        jaad.standing = False
     else:
-        jaad.right = False
-        jaad.left = False
+        jaad.standing = True
         jaad.walkCount = 0
 
     if not jaad.isJump:
