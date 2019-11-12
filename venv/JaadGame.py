@@ -22,7 +22,7 @@ class Player:
         self.vel = 5
         self.isJump = False
         self.jumpCount = 10
-        self.right = False
+        self.right = True
         self.left = False
         self.walkCount = 0
         self.standing = True
@@ -54,7 +54,7 @@ class Projectile:
         self.facing = facing    # positive or negative to determine which side facing ex (-1 or 1)
         self.vel = 8 * facing  # multiply by facing because we want the bullet to go either left or right
 
-    def draw(self):
+    def draw(self, win):
         pygame.draw.circle(win, self.color, (self.x, self.y), self.radius)  # put a final comment of (..., 1)
                                                                             # to make it not filled in
 
@@ -63,15 +63,17 @@ clock = pygame.time.Clock()
 
 
 def redrawGameWindow():
-
     window.blit(bg, (0, 0))  # putting in the background
     jaad.draw(window)
+    for bullet in bullets:
+        bullet.draw(window)
     pygame.display.update()
 
 
 # MAIN LOOP #
 
 jaad = Player(300,410, 64, 64)
+bullets = []
 run = True
 while run:
     clock.tick(27)
@@ -80,7 +82,22 @@ while run:
         if event.type == pygame.QUIT:
             run = False
 
+    for bullet in bullets:
+        if bullet.x < 500 and bullet.x > 0:
+            bullet.x += bullet.vel
+        else:
+            bullets.pop(bullets.index(bullet))
+
     keys = pygame.key.get_pressed()
+
+    if keys[pygame.K_SPACE]:
+        if jaad.left:
+            facing = -1
+        else:
+            facing = 1
+        if len(bullets) < 10:
+            bullets.append(Projectile(round(jaad.x + jaad.width // 2), round(jaad.y + jaad.height // 2), 4,
+                          (100, 10, 5), facing))
 
     if keys[pygame.K_LEFT] and jaad.x > jaad.vel:
         jaad.x -= jaad.vel
@@ -97,10 +114,10 @@ while run:
         jaad.walkCount = 0
 
     if not jaad.isJump:
-        if keys[pygame.K_SPACE]:
+        if keys[pygame.K_UP]:
             jaad.isJump = True
-            jaad.right = False
-            jaad.left = False
+            # jaad.right = False
+            # jaad.left = False
             jaad.walkCount = 0
     else:
         if jaad.jumpCount >= -10:
